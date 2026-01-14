@@ -56,7 +56,9 @@ jobs:
         run: npm install -g @google/clasp
 
       - name: Setup clasp credentials
-        run: echo '${{ secrets.CLASP_TOKEN }}' > ~/.clasprc.json
+        run: echo "$CLASP_TOKEN" > ~/.clasprc.json
+        env:
+          CLASP_TOKEN: ${{ secrets.CLASP_TOKEN }}
 
       - name: Deploy to Google Apps Script
         run: clasp push --force
