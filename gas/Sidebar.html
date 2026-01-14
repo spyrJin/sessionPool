@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      background: #f8f9fa;
+      color: #202124;
+      padding: 16px;
+      font-size: 14px;
+    }
+    
+    /* 카드 스타일 */
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .card-header {
+      font-size: 12px;
+      color: #5f6368;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    
+    /* 상태 표시 */
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    .status-dot.open { background: #34a853; }
+    .status-dot.closed { background: #ea4335; }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    /* 타이머 */
+    .timer {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a73e8;
+      text-align: center;
+      padding: 16px 0;
+    }
+    
+    /* 사용자 정보 */
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    
+    .user-details {
+      flex: 1;
+    }
+    
+    .user-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .user-streak {
+      color: #ea4335;
+      font-size: 14px;
+    }
+    
+    /* 세션 선택 */
+    .session-select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    
+    .session-select:focus {
+      outline: none;
+      border-color: #1a73e8;
+    }
+    
+    .session-select:disabled {
+      background: #f5f5f5;
+      cursor: not-allowed;
+    }
+    
+    /* 버튼 */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      text-align: center;
+    }
+    
+    .btn-primary {
+      background: #1a73e8;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #1557b0;
+    }
+    
+    .btn-primary:disabled {
+      background: #9aa0a6;
+      cursor: not-allowed;
+    }
+    
+    .btn-success {
+      background: #34a853;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #2d8e47;
+    }
+    
+    .btn-secondary {
+      background: #f1f3f4;
+      color: #5f6368;
+    }
+    
+    .btn-secondary:hover {
+      background: #e8eaed;
+    }
+    
+    /* 파트너 목록 */
+    .partners-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .partner-chip {
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+    }
+    
+    /* 공지사항 */
+    .announcement {
+      background: #fef7e0;
+      border-left: 4px solid #f9ab00;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 0 8px 8px 0;
+    }
+    
+    .announcement-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    /* 로딩 */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #5f6368;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1a73e8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* 에러 상태 */
+    .error-state {
+      text-align: center;
+      padding: 20px;
+      color: #ea4335;
+    }
+    
+    /* 미등록 상태 */
+    .unregistered {
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .unregistered-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    /* 새로고침 버튼 */
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 8px;
+      background: none;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      color: #5f6368;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    
+    .refresh-btn:hover {
+      background: #f5f5f5;
+    }
+    
+    /* 숨김 */
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <!-- 로딩 상태 -->
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <p>로딩 중...</p>
+  </div>
+  
+  <!-- 미등록 사용자 -->
+  <div id="unregistered" class="unregistered hidden">
+    <div class="unregistered-icon">👋</div>
+    <h2>환영합니다!</h2>
+    <p style="margin: 12px 0; color: #5f6368;">
+      아직 등록되지 않은 사용자입니다.<br>
+      관리자에게 문의해주세요.
+    </p>
+    <div id="user-email" style="font-size: 12px; color: #9aa0a6; margin-top: 8px;"></div>
+  </div>
+  
+  <!-- 메인 콘텐츠 -->
+  <div id="main-content" class="hidden">
+    <!-- 공지사항 -->
+    <div id="announcement" class="announcement hidden">
+      <div class="announcement-title">📢 공지사항</div>
+      <div id="announcement-text"></div>
+    </div>
+    
+    <!-- 게이트 상태 -->
+    <div class="card">
+      <div class="card-header">현재 상태</div>
+      <div class="status-indicator">
+        <div id="status-dot" class="status-dot"></div>
+        <span id="status-text">확인 중...</span>
+      </div>
+      <div class="timer" id="timer">--:--</div>
+      <div style="text-align: center; color: #5f6368; font-size: 12px;">
+        현재 블록: <span id="current-block">--:--</span>
+      </div>
+    </div>
+    
+    <!-- 사용자 정보 -->
+    <div class="card">
+      <div class="card-header">내 정보</div>
+      <div class="user-info">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div class="user-details">
+          <div class="user-name" id="user-name">@username</div>
+          <div class="user-streak" id="user-streak">🔥 0일 연속</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 세션 선택 -->
+    <div class="card" id="session-card">
+      <div class="card-header">세션 선택</div>
+      <select id="session-select" class="session-select">
+        <option value="">선택하세요...</option>
+      </select>
+      <button id="select-btn" class="btn btn-primary" style="margin-top: 12px;" onclick="selectSession()">
+        선택하기
+      </button>
+    </div>
+    
+    <!-- Meet 입장 (매칭 완료 시) -->
+    <div class="card hidden" id="meet-card">
+      <div class="card-header">매칭 완료!</div>
+      <div id="session-value" style="font-size: 16px; font-weight: 600; margin-bottom: 12px;"></div>
+      
+      <div id="partners-section">
+        <div style="font-size: 12px; color: #5f6368; margin-bottom: 4px;">파트너</div>
+        <div class="partners-list" id="partners-list"></div>
+      </div>
+      
+      <a id="meet-link" href="#" target="_blank" class="btn btn-success" style="margin-top: 16px;">
+        🚀 Meet 입장하기
+      </a>
+    </div>
+    
+    <!-- 새로고침 -->
+    <button class="refresh-btn" onclick="refresh()">
+      🔄 새로고침
+    </button>
+  </div>
+
+  <script>
+    // 상태 저장
+    let currentData = null;
+    let refreshInterval = null;
+    
+    // 초기 로드
+    document.addEventListener('DOMContentLoaded', function() {
+      loadData();
+      startAutoRefresh();
+    });
+    
+    // 자동 새로고침 (5초)
+    function startAutoRefresh() {
+      if (refreshInterval) clearInterval(refreshInterval);
+      refreshInterval = setInterval(loadData, 5000);
+    }
+    
+    // 데이터 로드
+    function loadData() {
+      google.script.run
+        .withSuccessHandler(updateUI)
+        .withFailureHandler(showError)
+        .getSidebarData();
+    }
+    
+    // UI 업데이트
+    function updateUI(data) {
+      currentData = data;
+      
+      // 로딩 숨김
+      document.getElementById('loading').classList.add('hidden');
+      
+      // 미등록 사용자
+      if (!data.registered) {
+        document.getElementById('unregistered').classList.remove('hidden');
+        document.getElementById('main-content').classList.add('hidden');
+        document.getElementById('user-email').textContent = data.email;
+        return;
+      }
+      
+      // 메인 콘텐츠 표시
+      document.getElementById('unregistered').classList.add('hidden');
+      document.getElementById('main-content').classList.remove('hidden');
+      
+      // 공지사항
+      if (data.announcement) {
+        document.getElementById('announcement').classList.remove('hidden');
+        document.getElementById('announcement-text').textContent = data.announcement;
+      } else {
+        document.getElementById('announcement').classList.add('hidden');
+      }
+      
+      // 게이트 상태
+      const statusDot = document.getElementById('status-dot');
+      const statusText = document.getElementById('status-text');
+      
+      if (data.gateStatus.isOpen) {
+        statusDot.className = 'status-dot open';
+        statusText.textContent = '🟢 선택 가능';
+      } else {
+        statusDot.className = 'status-dot closed';
+        statusText.textContent = '🔴 몰입 중';
+      }
+      
+      // 타이머
+      document.getElementById('timer').textContent = data.gateStatus.displayTime;
+      document.getElementById('current-block').textContent = data.currentBlock.label;
+      
+      // 사용자 정보
+      document.getElementById('user-avatar').textContent = data.instagram.charAt(1).toUpperCase();
+      document.getElementById('user-name').textContent = data.instagram;
+      document.getElementById('user-streak').textContent = '🔥 ' + data.streak + '일 연속';
+      
+      // Meet 링크가 있으면 (매칭 완료)
+      if (data.meetLink) {
+        document.getElementById('session-card').classList.add('hidden');
+        document.getElementById('meet-card').classList.remove('hidden');
+        document.getElementById('session-value').textContent = data.sessionValue;
+        document.getElementById('meet-link').href = data.meetLink;
+        
+        // 파트너 표시
+        const partnersList = document.getElementById('partners-list');
+        partnersList.innerHTML = '';
+        if (data.partners && data.partners.length > 0) {
+          data.partners.forEach(function(partner) {
+            const chip = document.createElement('span');
+            chip.className = 'partner-chip';
+            chip.textContent = partner;
+            partnersList.appendChild(chip);
+          });
+        } else {
+          document.getElementById('partners-section').classList.add('hidden');
+        }
+      } else {
+        // 세션 선택 가능
+        document.getElementById('session-card').classList.remove('hidden');
+        document.getElementById('meet-card').classList.add('hidden');
+        
+        // 세션 옵션 로드 (옵션이 없거나 초기 상태일 때만 로드하여 선택 초기화 방지)
+        const select = document.getElementById('session-select');
+        if (select.options.length <= 1) {
+          loadSessionOptions();
+        }
+        
+        // 게이트 닫혀있으면 비활성화
+        const selectBtn = document.getElementById('select-btn');
+        
+        if (!data.gateStatus.isOpen) {
+          select.disabled = true;
+          selectBtn.disabled = true;
+          selectBtn.textContent = '게이트 닫힘';
+        } else {
+          select.disabled = false;
+          selectBtn.disabled = false;
+          selectBtn.textContent = '선택하기';
+        }
+      }
+    }
+    
+    // 세션 옵션 로드
+    function loadSessionOptions() {
+      google.script.run
+        .withSuccessHandler(function(options) {
+          const select = document.getElementById('session-select');
+          // 기존 선택값 보존 시도
+          const currentValue = select.value;
+          
+          select.innerHTML = '<option value="">선택하세요...</option>';
+          
+          options.forEach(function(option) {
+            const opt = document.createElement('option');
+            opt.value = option;
+            opt.textContent = option;
+            select.appendChild(opt);
+          });
+          
+          // 값이 여전히 유효하다면 복원
+          if (currentValue && Array.from(select.options).some(opt => opt.value === currentValue)) {
+            select.value = currentValue;
+          }
+        })
+        .getSessionOptions();
+    }
+    
+    // 세션 선택
+    function selectSession() {
+      const value = document.getElementById('session-select').value;
+      if (!value) {
+        alert('세션을 선택해주세요.');
+        return;
+      }
+      
+      const btn = document.getElementById('select-btn');
+      btn.disabled = true;
+      btn.textContent = '처리 중...';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            loadData();
+            // 성공 알림 (선택적)
+            // alert(result.message);
+          } else {
+            alert(result.message);
+            btn.disabled = false;
+            btn.textContent = '선택하기';
+          }
+        })
+        .withFailureHandler(function(error) {
+          alert('오류가 발생했습니다: ' + error);
+          btn.disabled = false;
+          btn.textContent = '선택하기';
+        })
+        .selectSession(value);
+    }
+    
+    // 새로고침
+    function refresh() {
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('main-content').classList.add('hidden');
+      loadData();
+    }
+    
+    // 에러 처리
+    function showError(error) {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('main-content').innerHTML = 
+        '<div class="error-state">' +
+        '<p>⚠️ 오류가 발생했습니다</p>' +
+        '<p style="font-size: 12px; margin-top: 8px;">' + error + '</p>' +
+        '<button class="btn btn-secondary" style="margin-top: 16px;" onclick="refresh()">다시 시도</button>' +
+        '</div>';
+      document.getElementById('main-content').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

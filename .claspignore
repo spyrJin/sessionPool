@@ -1,0 +1,9 @@
+node_modules/**
+.git/**
+test/**
+jest.config.js
+package.json
+package-lock.json
+README.md
+bun.lock
+playwright.config.js
