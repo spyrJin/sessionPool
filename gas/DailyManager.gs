@@ -41,7 +41,8 @@ function createDailySheetAndNotify() {
     const users = loadUsersToTargetSheet(newSsId);
     
     // 4. 공유 권한 설정 (링크가 있는 누구나 편집 가능, 또는 등록된 사용자만)
-    newSs.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.EDIT);
+    const newFile = DriveApp.getFileById(newSsId);
+    newFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.EDIT);
     
     // 5. 관리자에게 완료 메일 발송
     sendAdminReport(today, newSsUrl, users.length);
@@ -236,7 +237,8 @@ function createTomorrowSheetAndNotify() {
     // 6. 공유 권한 설정 (링크가 있는 누구나 편집 가능)
     // NOTE: ANYONE_WITH_LINK + EDIT is intentional for users without Google accounts
     // Risk accepted: see todos/006-ready-p2-anyone-with-link-edit.md
-    newSs.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.EDIT);
+    const newFile = DriveApp.getFileById(newSsId);
+    newFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.EDIT);
 
     // 7. 🔥 핵심: 활성 시트 ID 설정 (마스터의 트리거가 이 시트를 제어하게 됨)
     setActiveSheetId(newSsId);
