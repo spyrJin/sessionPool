@@ -59,6 +59,24 @@ The system operates on a **gate-based timing model**:
 ### Testing Setup
 Tests use a custom `gas-loader.js` that loads GAS files into a Node.js VM context with mocked GAS services (`gas-mocks.js`). This allows running MatchingEngine and other pure logic locally.
 
+## Solution Documentation
+
+Solved problems are documented in `docs/solutions/` for future reference:
+
+```
+docs/solutions/
+├── security-issues/     # XSS prevention, input validation
+├── concurrency/         # LockService patterns, race conditions
+└── testing/             # Playwright, E2E testing strategies
+```
+
+**Key patterns documented:**
+- `gas-xss-prevention.md`: Using `escapeHtml()` for user input in HTML templates
+- `gas-lockservice-race-conditions.md`: Preventing duplicate operations with LockService
+- `playwright-gas-menu-testing.md`: Browser automation for GAS custom menus
+
+When solving a non-trivial problem, document it with `/workflows:compound`.
+
 ## CI/CD
 
 GitHub Actions workflow runs:
