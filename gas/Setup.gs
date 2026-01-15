@@ -469,7 +469,7 @@ function quickRegisterJinmo() {
  */
 function loadInitialDataFromSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const dbSheet = ss.getSheetByName('DB_Users');
+  const dbSheet = ss.getSheetByName(CONFIG.USER_DATA_SHEET_NAME);
   
   if (!dbSheet) return; // DB 시트 없으면 패스
   

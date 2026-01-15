@@ -24,6 +24,10 @@ function requireAdmin() {
 function addAdminMenu() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('🔧 관리자')
+    .addItem('📬 내일 시트 생성 + 발송', 'createTomorrowSheetAndNotify')
+    .addItem('📋 활성 시트 정보', 'showActiveSheetInfo')
+    .addItem('🔄 마스터로 복귀', 'resetToMasterSheet')
+    .addSeparator()
     .addItem('➕ 사용자 등록', 'promptRegisterUser')
     .addItem('🗑️ 사용자 삭제', 'promptDeleteUser')
     .addItem('🔄 행 동기화 (Row Sync)', 'runRowReconciliation')
@@ -167,16 +171,39 @@ function createEmailTemplateSheet() {
   // 기본 템플릿 데이터
   const defaultData = [
     [
-      'WELCOME_SLOTH', 
-      'SessionPool 챌린지 신청자용 웰컴 레터', 
-      '[SessionPool] 챌린지 참여 신청이 완료되었습니다 🦥', 
+      'DAILY_LINK',
+      '매일 발송되는 세션풀 링크 이메일',
+      '[SessionPool] 내일 세션이 준비되었습니다! 🚀',
+      `<div style="font-family: 'Apple SD Gothic Neo', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h1 style="color: #1A73E8;">🌅 내일 세션 준비 완료!</h1>
+  <p>안녕하세요 <strong>{{name}}</strong>님,</p>
+  <p>내일 세션풀 시트가 준비되었습니다.</p>
+
+  <div style="background: #E3F2FD; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <p style="margin: 0; font-size: 18px;">📋 <strong>세션 참여하기</strong></p>
+    <p style="margin: 10px 0;"><a href="{{link}}" style="color: #1A73E8; text-decoration: none; font-weight: bold;">👉 시트 열기</a></p>
+  </div>
+
+  <p style="color: #666; font-size: 14px;">
+    💡 05:00부터 시작됩니다. 게이트가 열리면 원하는 시간대를 선택하세요!
+  </p>
+
+  <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+  <p style="color: #999; font-size: 12px;">SessionPool - 집단 몰입 플랫폼</p>
+</div>`,
+      ''
+    ],
+    [
+      'WELCOME_SLOTH',
+      'SessionPool 챌린지 신청자용 웰컴 레터',
+      '[SessionPool] 챌린지 참여 신청이 완료되었습니다 🦥',
       '<div style="padding:20px;"><h1>환영합니다!</h1><p>매일 15:00에 만나요.</p></div>',
       'test@example.com'
     ],
     [
-      'WELCOME_BASIC', 
-      '일반 세션풀 신청자용 웰컴 레터', 
-      '[SessionPool] 환영합니다! 몰입 세션 참여 안내', 
+      'WELCOME_BASIC',
+      '일반 세션풀 신청자용 웰컴 레터',
+      '[SessionPool] 환영합니다! 몰입 세션 참여 안내',
       '<div style="padding:20px;"><h2>세션풀에 오신 것을 환영합니다.</h2><p>링크: <a href="#">입장하기</a></p></div>',
       ''
     ]

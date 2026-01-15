@@ -67,3 +67,23 @@ GitHub Actions workflow runs:
 3. Auto-deploy to GAS via clasp (on main branch push)
 
 Deployment requires `CLASP_TOKEN` secret containing clasp credentials.
+
+## Project Constitution
+
+### Workflow Commands
+- Plan: `/workflows:plan`
+- Work: `/workflows:work`
+- Review: `/workflows:review`
+- Triage: `/triage`
+
+### Workflow Rules
+1. 모든 기능 개발은 `/workflows:plan`으로 시작한다.
+2. 코드는 반드시 `/workflows:review`를 통과해야 병합한다.
+3. 해결된 난제는 `/workflows:compound`로 문서화한다.
+
+### Tech Stack
+- Google Apps Script (V8 runtime)
+- HTML/CSS for sidebar UI
+- Jest + Bun for unit testing
+- Playwright for UI testing
+- clasp for deployment

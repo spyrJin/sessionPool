@@ -30,6 +30,19 @@ function getYesterdayString() {
   return d.getFullYear() + '-' + padZero(d.getMonth() + 1) + '-' + padZero(d.getDate());
 }
 
+/**
+ * HTML 엔티티 이스케이프 (XSS 방지)
+ */
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 
 // ─────────────────────────────────────────────────────────
 // 시트 열(Column) 변환
@@ -272,6 +285,13 @@ function isRecoverySession(sessionValue) {
 
 
 // ─────────────────────────────────────────────────────────
+// 시트 캐싱 (성능 최적화)
+// ─────────────────────────────────────────────────────────
+
+let _cachedMainSheet = null;
+let _cachedSheetId = null;
+
+// ─────────────────────────────────────────────────────────
 // 시스템 로그 (간단 버전)
 // ─────────────────────────────────────────────────────────
 
@@ -282,13 +302,81 @@ function systemLog(category, action, details) {
 }
 
 /**
- * 메인 시트 객체 반환 (캐싱 없음)
+ * 메인 시트 객체 반환 (원격 시트 지원 + 캐싱)
+ * - activeSheetId가 설정되어 있으면 해당 스프레드시트의 시트 반환
+ * - 없으면 현재 스프레드시트의 시트 반환
+ * - 캐싱으로 성능 최적화
  */
 function getMainSheet() {
+  const activeSheetId = getActiveSheetId();
+
+  // 캐시 히트 확인
+  if (_cachedMainSheet && _cachedSheetId === activeSheetId) {
+    return _cachedMainSheet;
+  }
+
+  let ss;
+  if (activeSheetId) {
+    // 원격 시트 열기 (마스터에서 오늘의 시트 제어)
+    try {
+      ss = SpreadsheetApp.openById(activeSheetId);
+    } catch (e) {
+      // 원격 시트 열기 실패 시 관리자 알림 + 에러 발생 (silent fallback 제거)
+      systemLog('ERROR', '원격 시트 열기 실패', { activeSheetId: activeSheetId, error: e.toString() });
+
+      // 관리자에게 긴급 알림
+      try {
+        GmailApp.sendEmail(
+          CONFIG.ADMIN_EMAILS[0],
+          '[긴급] SessionPool 활성 시트 접근 실패',
+          `activeSheetId가 유효하지 않습니다.\nID: ${activeSheetId}\n\n마스터 시트에서 '마스터로 복귀'를 실행하세요.`
+        );
+      } catch (emailError) {
+        systemLog('ERROR', '관리자 알림 이메일 발송 실패', { error: emailError.toString() });
+      }
+
+      throw new Error('원격 시트 접근 불가: ' + activeSheetId + '. 마스터에서 복구 필요.');
+    }
+  } else {
+    // 기본: 현재 스프레드시트
+    ss = SpreadsheetApp.getActiveSpreadsheet();
+  }
+
+  let sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(CONFIG.SHEET_NAME);
+  }
+
+  // 캐시 저장
+  _cachedMainSheet = sheet;
+  _cachedSheetId = activeSheetId;
+
+  return sheet;
+}
+
+/**
+ * 메인 시트 캐시 무효화
+ */
+function invalidateMainSheetCache() {
+  _cachedMainSheet = null;
+  _cachedSheetId = null;
+}
+
+/**
+ * 마스터 시트 객체 반환 (항상 현재 스프레드시트)
+ *
+ * 사용 시점:
+ * - 사용자 등록/삭제 (마스터 DB에만 저장)
+ * - 트리거 설정 (마스터에만 설치)
+ * - 관리자 메뉴 작업
+ *
+ * 참고: getMainSheet()는 activeSheetId가 설정되면 원격 시트를 반환함.
+ * 마스터 전용 작업에는 반드시 이 함수를 사용할 것.
+ */
+function getMasterSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
   if (!sheet) {
-    // 시트가 없으면 생성 (Setup.gs에 의존)
     sheet = ss.insertSheet(CONFIG.SHEET_NAME);
   }
   return sheet;

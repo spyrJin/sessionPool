@@ -10,6 +10,7 @@ const CONFIG = {
   // 기본 설정
   // ─────────────────────────────────────────────────────────
   SHEET_NAME: 'SessionPool',      // 메인 시트 탭 이름
+  USER_DATA_SHEET_NAME: 'System_UserData',  // 사용자 데이터 저장용 숨김 시트
   START_HOUR: 5,                   // 하루 시작 시간 (05:00)
   GATE_DURATION_MINUTES: 5,        // 게이트 열림 시간 (분)
   BLOCK_DURATION_MINUTES: 30,      // 블록 단위 (분)
@@ -166,8 +167,83 @@ function getCohortRooms(cohortName) {
 function getAllCohorts() {
   const props = PropertiesService.getScriptProperties();
   const dynamicCohorts = JSON.parse(props.getProperty('cohorts') || '{}');
-  
+
   // CONFIG와 동적 코호트 병합
   const allCohorts = { ...CONFIG.COHORTS, ...dynamicCohorts };
   return Object.keys(allCohorts);
+}
+
+// ─────────────────────────────────────────────────────────
+// 원격 시트 제어 (마스터 → 오늘의 시트)
+// ─────────────────────────────────────────────────────────
+
+const ACTIVE_SHEET_ID_KEY = 'activeSheetId';
+const ACTIVE_SHEET_SET_AT_KEY = 'activeSheetSetAt';
+const ACTIVE_SHEET_MAX_AGE_MS = 36 * 60 * 60 * 1000;  // 36시간
+
+/**
+ * 현재 운영 중인 시트 ID 조회 (TTL 자동 만료 포함)
+ * @returns {string|null} 스프레드시트 ID
+ */
+function getActiveSheetId() {
+  const props = PropertiesService.getScriptProperties();
+  const id = props.getProperty(ACTIVE_SHEET_ID_KEY);
+  const setAt = props.getProperty(ACTIVE_SHEET_SET_AT_KEY);
+
+  if (id && setAt) {
+    const age = Date.now() - new Date(setAt).getTime();
+    if (age > ACTIVE_SHEET_MAX_AGE_MS) {
+      clearActiveSheetId();
+      systemLog('CONFIG', '활성 시트 ID 만료로 자동 초기화', { age: Math.round(age / 3600000) + '시간' });
+      return null;
+    }
+  }
+
+  return id;
+}
+
+/**
+ * 현재 운영 중인 시트 ID 설정 (유효성 검사 포함)
+ * @param {string} sheetId - 스프레드시트 ID
+ */
+function setActiveSheetId(sheetId) {
+  // 유효성 검사
+  if (!sheetId || typeof sheetId !== 'string' || sheetId.length < 10) {
+    throw new Error('유효하지 않은 시트 ID 형식: ' + sheetId);
+  }
+
+  // 접근 가능성 검사
+  try {
+    const ss = SpreadsheetApp.openById(sheetId);
+    if (!ss.getSheetByName(CONFIG.SHEET_NAME)) {
+      throw new Error('SessionPool 시트가 없습니다');
+    }
+  } catch (e) {
+    throw new Error('시트 접근 불가: ' + sheetId + ' - ' + e.toString());
+  }
+
+  const props = PropertiesService.getScriptProperties();
+  props.setProperty(ACTIVE_SHEET_ID_KEY, sheetId);
+  props.setProperty(ACTIVE_SHEET_SET_AT_KEY, new Date().toISOString());
+  systemLog('CONFIG', '활성 시트 ID 변경', { sheetId: sheetId });
+
+  // 캐시 무효화
+  if (typeof invalidateMainSheetCache === 'function') {
+    invalidateMainSheetCache();
+  }
+}
+
+/**
+ * 활성 시트 ID 초기화 (마스터 시트로 복귀)
+ */
+function clearActiveSheetId() {
+  const props = PropertiesService.getScriptProperties();
+  props.deleteProperty(ACTIVE_SHEET_ID_KEY);
+  props.deleteProperty(ACTIVE_SHEET_SET_AT_KEY);
+  systemLog('CONFIG', '활성 시트 ID 초기화 (마스터로 복귀)');
+
+  // 캐시 무효화
+  if (typeof invalidateMainSheetCache === 'function') {
+    invalidateMainSheetCache();
+  }
 }
