@@ -42,6 +42,10 @@ function addAdminMenu() {
     .addItem('📧 이메일 템플릿 시트 생성', 'createEmailTemplateSheet')
     .addItem('🔐 보안 로그 보기', 'viewSecurityLogs')
     .addItem('🧹 데이터 초기화 (Reset)', 'resetSheetData')
+    .addSeparator()
+    .addItem('📧 SlothTime 내일 발송', 'runSlothTimeTomorrow')
+    .addItem('🔍 SlothTime 설정 확인', 'showSlothTimeConfig')
+    .addItem('✅ SlothTime 설정 검증', 'validateSlothTimeSetup')
     .addToUi();
 }
 

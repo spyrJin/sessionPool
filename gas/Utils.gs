@@ -392,22 +392,154 @@ function getMasterSheet() {
  */
 function generateTimeHeaders() {
   const headers = ['👤 사용자']; // A열 헤더
-  
+
   const startHour = CONFIG.START_HOUR; // 5
   const totalBlocks = CONFIG.TOTAL_BLOCKS; // 48
-  
+
   for (let i = 0; i < totalBlocks; i++) {
     const totalMinutes = (startHour * 60) + (i * 30);
-    
+
     let hour = Math.floor(totalMinutes / 60);
     const minute = totalMinutes % 60;
-    
+
     // 24시 넘어가면 00시로 표기 (24 -> 00, 25 -> 01)
     if (hour >= 24) hour -= 24;
-    
+
     const label = padZero(hour) + ':' + padZero(minute);
     headers.push(label);
   }
-  
+
   return headers;
+}
+
+
+// ─────────────────────────────────────────────────────────
+// 이메일 / Drive / Calendar 공통 유틸리티
+// ─────────────────────────────────────────────────────────
+
+/**
+ * 이메일 형식 유효성 검사
+ * @param {string} email
+ * @returns {boolean}
+ */
+function _isValidEmail(email) {
+  if (!email || typeof email !== 'string') return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+/**
+ * 배열에서 중복 제거
+ * @param {Array} arr
+ * @returns {Array}
+ */
+function _dedup(arr) {
+  if (!arr || !arr.length) return [];
+  var seen = {};
+  var result = [];
+  for (var i = 0; i < arr.length; i++) {
+    var item = arr[i];
+    if (!seen[item]) {
+      seen[item] = true;
+      result.push(item);
+    }
+  }
+  return result;
+}
+
+/**
+ * 파일에 편집자 권한 부여 (비구글 계정 처리 포함)
+ * @param {string} fileId
+ * @param {string[]} emails
+ * @param {string} nonGooglePolicy - 'skip'|'error'|'link'
+ * @returns {{granted: string[], skipped: Array, errors: Array}}
+ */
+function _grantEditorsSmart(fileId, emails, nonGooglePolicy) {
+  nonGooglePolicy = nonGooglePolicy || 'skip';
+  var file = DriveApp.getFileById(fileId);
+  var granted = [];
+  var skipped = [];
+  var errors = [];
+
+  for (var i = 0; i < emails.length; i++) {
+    var email = emails[i];
+    try {
+      file.addEditor(email);
+      granted.push(email);
+    } catch (e) {
+      var errMsg = e.message || e.toString();
+      if (nonGooglePolicy === 'skip') {
+        skipped.push({ email: email, reason: errMsg });
+      } else if (nonGooglePolicy === 'error') {
+        errors.push({ email: email, reason: errMsg });
+      } else if (nonGooglePolicy === 'link') {
+        // 링크 공유로 대체 (이미 ANYONE_WITH_LINK 설정된 경우 의미 없음)
+        skipped.push({ email: email, reason: 'fallback_to_link' });
+      }
+    }
+  }
+
+  return { granted: granted, skipped: skipped, errors: errors };
+}
+
+/**
+ * Calendar 이벤트 + Meet 링크 생성
+ * @param {Object} options
+ * @returns {{eventId: string, meetLink: string, htmlLink: string}}
+ */
+function _createCalendarMeetStrict(options) {
+  var resource = {
+    summary: options.summary,
+    description: options.description || '',
+    start: {
+      dateTime: options.startTime.toISOString(),
+      timeZone: options.timezone || 'Asia/Seoul'
+    },
+    end: {
+      dateTime: options.endTime.toISOString(),
+      timeZone: options.timezone || 'Asia/Seoul'
+    },
+    conferenceData: {
+      createRequest: {
+        requestId: Utilities.getUuid(),
+        conferenceSolutionKey: { type: 'hangoutsMeet' }
+      }
+    },
+    visibility: 'private'
+  };
+
+  var calendarId = options.calendarId || 'primary';
+  var event = Calendar.Events.insert(resource, calendarId, {
+    conferenceDataVersion: 1,
+    sendUpdates: options.sendUpdates || 'none'
+  });
+
+  var meetLink = null;
+  if (event.conferenceData && event.conferenceData.entryPoints) {
+    for (var i = 0; i < event.conferenceData.entryPoints.length; i++) {
+      if (event.conferenceData.entryPoints[i].entryPointType === 'video') {
+        meetLink = event.conferenceData.entryPoints[i].uri;
+        break;
+      }
+    }
+  }
+
+  return {
+    eventId: event.id,
+    meetLink: meetLink,
+    htmlLink: event.htmlLink
+  };
+}
+
+/**
+ * 스크립트 소유자에게 에러 알림 이메일 발송
+ * @param {string} subject
+ * @param {string} body
+ */
+function _notifyOwnerError(subject, body) {
+  try {
+    var adminEmail = CONFIG.ADMIN_EMAILS[0];
+    GmailApp.sendEmail(adminEmail, subject, body);
+  } catch (e) {
+    Logger.log('[ERROR] 에러 알림 이메일 발송 실패: ' + e.message);
+  }
 }
