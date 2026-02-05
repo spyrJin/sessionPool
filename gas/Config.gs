@@ -134,6 +134,34 @@ const CONFIG = {
     EDIT_DENIED: '⚠️ 편집 불가',
     NOT_YOUR_ROW: '⚠️ 본인 행만 편집 가능',
     GATE_CLOSED_MSG: '⚠️ 게이트가 닫혔습니다'
+  },
+
+  // ─────────────────────────────────────────────────────────
+  // SlothTime 이메일 자동화 설정
+  // ─────────────────────────────────────────────────────────
+  SLOTHTIME: {
+    TIMEZONE: 'Asia/Seoul',
+    TITLE_PREFIX: 'SlothTime',
+    SESSION: {
+      START: '15:00',
+      LABEL: '읽기 쓰기 시간',
+      DURATION_MIN: 120
+    },
+    TEMPLATE: {
+      DOC_ID: ''  // 배포 전 설정 필요
+    },
+    OUTPUT_FOLDER_ID: '',  // 배포 전 설정 필요
+    SHEET: {
+      ID: '',              // 배포 전 설정 필요
+      GID: 0,
+      EMAIL_HEADER: '이메일'
+    },
+    MAIL: {
+      SENDER_NAME: 'SessionPool',
+      SUBJECT_PREFIX: 'SlothTime'
+    },
+    DRIVE_NON_GOOGLE_POLICY: 'skip',
+    SKIP_DAYS: [0]  // 0=일요일
   }
 };
 

@@ -418,6 +418,83 @@ const ContentService = {
 };
 
 // ─────────────────────────────────────────────────────────
+// GmailApp Mock
+// ─────────────────────────────────────────────────────────
+const GmailApp = {
+  _sent: [],
+  sendEmail(recipient, subject, body, options) {
+    this._sent.push({ recipient, subject, body, options });
+  },
+  _reset() { this._sent = []; }
+};
+
+// ─────────────────────────────────────────────────────────
+// DriveApp Mock
+// ─────────────────────────────────────────────────────────
+const DriveApp = {
+  Access: {
+    ANYONE: 'ANYONE',
+    ANYONE_WITH_LINK: 'ANYONE_WITH_LINK',
+    DOMAIN: 'DOMAIN',
+    DOMAIN_WITH_LINK: 'DOMAIN_WITH_LINK',
+    PRIVATE: 'PRIVATE'
+  },
+  Permission: {
+    VIEW: 'VIEW',
+    EDIT: 'EDIT',
+    COMMENT: 'COMMENT',
+    OWNER: 'OWNER',
+    ORGANIZER: 'ORGANIZER',
+    NONE: 'NONE'
+  },
+  getFileById(id) {
+    return {
+      _id: id,
+      getId: function() { return this._id; },
+      getName: function() { return 'Mock File'; },
+      getUrl: function() { return 'https://docs.google.com/document/d/' + this._id + '/edit'; },
+      makeCopy: function(title, folder) {
+        return {
+          _id: 'copy-' + id,
+          getId: function() { return this._id; },
+          getUrl: function() { return 'https://docs.google.com/document/d/' + this._id + '/edit'; },
+          setSharing: function() { return this; },
+          addEditor: function() { return this; }
+        };
+      },
+      setSharing: function() { return this; },
+      addEditor: function() { return this; }
+    };
+  },
+  getFolderById(id) {
+    return {
+      _id: id,
+      getId: function() { return this._id; },
+      getName: function() { return 'Mock Folder'; }
+    };
+  }
+};
+
+// ─────────────────────────────────────────────────────────
+// Calendar Advanced Service Mock
+// ─────────────────────────────────────────────────────────
+const Calendar = {
+  Events: {
+    insert: function(event, calendarId, options) {
+      return {
+        id: 'mock-event-id',
+        htmlLink: 'https://calendar.google.com/event?eid=mock',
+        conferenceData: {
+          entryPoints: [
+            { entryPointType: 'video', uri: 'https://meet.google.com/mock-meet-link' }
+          ]
+        }
+      };
+    }
+  }
+};
+
+// ─────────────────────────────────────────────────────────
 // Export All Mocks
 // ─────────────────────────────────────────────────────────
 module.exports = {
@@ -432,6 +509,9 @@ module.exports = {
   LockService,
   UrlFetchApp,
   ContentService,
+  GmailApp,
+  DriveApp,
+  Calendar,
   // Expose classes for advanced usage
   MockSpreadsheet,
   MockSheet,

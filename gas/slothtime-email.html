@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+
+  <!-- 외부 컨테이너 -->
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
+    <tr>
+      <td align="center" style="padding: 40px 16px;">
+
+        <!-- 메인 카드 -->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 480px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+
+          <!-- 헤더 -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 32px; text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 8px;">&#x1F9A5;</div>
+              <div style="color: #ffffff; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Sloth Time</div>
+              <div style="color: rgba(255,255,255,0.85); font-size: 14px; margin-top: 4px;">읽기 쓰기 몰입</div>
+            </td>
+          </tr>
+
+          <!-- 세션 정보 -->
+          <tr>
+            <td style="padding: 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8f9fa; border-radius: 12px;">
+                <tr>
+                  <td style="padding: 20px 24px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="color: #6b7280; font-size: 13px; padding-bottom: 8px;">날짜</td>
+                        <td style="color: #111827; font-size: 15px; font-weight: 600; text-align: right; padding-bottom: 8px;"><?= date ?></td>
+                      </tr>
+                      <tr>
+                        <td style="color: #6b7280; font-size: 13px;">시간</td>
+                        <td style="color: #111827; font-size: 15px; font-weight: 600; text-align: right;"><?= time ?> <?= tzLabel ?></td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- 버튼 영역 -->
+          <tr>
+            <td style="padding: 0 32px 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <!-- Meet 버튼 -->
+                  <td style="padding-right: 6px;" width="50%">
+                    <a href="<?!= meetLink ?>" target="_blank" style="display: block; background-color: #1A73E8; color: #ffffff; text-decoration: none; text-align: center; padding: 14px 16px; border-radius: 10px; font-size: 14px; font-weight: 600;">
+                      Meet 입장
+                    </a>
+                  </td>
+                  <!-- Doc 버튼 -->
+                  <td style="padding-left: 6px;" width="50%">
+                    <a href="<?!= docUrl ?>" target="_blank" style="display: block; background-color: #ffffff; color: #374151; text-decoration: none; text-align: center; padding: 14px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; border: 1.5px solid #d1d5db;">
+                      Doc 열기
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- 푸터 -->
+          <tr>
+            <td style="border-top: 1px solid #e5e7eb; padding: 20px 32px; text-align: center;">
+              <span style="color: #9ca3af; font-size: 12px;">powered by SessionPool</span>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /메인 카드 -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
