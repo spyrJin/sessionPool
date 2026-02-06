@@ -79,17 +79,13 @@ export function Dashboard({
     setQueueLoading(true);
     try {
       if (inQueue) {
-        // Leave queue
-        await supabase
-          .from("instant_queue")
-          .delete()
-          .eq("user_id", profile.id);
+        await fetch("/api/queue", { method: "DELETE" });
         setInQueue(false);
       } else {
-        // Join queue
-        await supabase.from("instant_queue").upsert({
-          user_id: profile.id,
-          session_type: "immerse",
+        await fetch("/api/queue", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionType: "immerse" }),
         });
         setInQueue(true);
       }
