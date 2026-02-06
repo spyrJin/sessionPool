@@ -1,16 +1,2 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/gate-open",
-      "schedule": "0,30 * * * *"
-    },
-    {
-      "path": "/api/cron/gate-close",
-      "schedule": "5,35 * * * *"
-    },
-    {
-      "path": "/api/cron/instant-match",
-      "schedule": "* * * * *"
-    }
-  ]
 }
